@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+.venv
+venv/
+pytest_cache/
+.coverage
+
+# Flutter/Dart
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.melos_tool/
+.idea/
+android/
+ios/
+linux/
+macos/
+web/
+windows/
+
+# VS Code
+.vscode/
+
+# Logs
+logs/
+*.log
