@@ -1,16 +1,11 @@
 """Authentication endpoints."""
 from __future__ import annotations
 
-from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 import logging
 from fastapi.security import OAuth2PasswordRequestForm
-
-try:
-    from sqlalchemy.ext.asyncio import AsyncSession
-except Exception:  # pragma: no cover - fallback when SQLAlchemy missing in env
-    AsyncSession = Any
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.db.session import get_session
 from backend.app.models.user import User

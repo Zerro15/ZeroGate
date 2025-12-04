@@ -1,18 +1,18 @@
 from fastapi import FastAPI
 
-# Создаём объект приложения FastAPI.
-# Комментарии пишем по-русски, чтобы новичку было понятно.
+from backend.app.api.routes import auth as auth_routes
+
 app = FastAPI(title="ZerroGate Backend")
+
+# Include auth router
+app.include_router(auth_routes.router)
 
 
 @app.get("/api/status")
 def get_status() -> dict:
-    """Простой эндпоинт для проверки, что сервер работает.
-
-    Возвращаем просто словарь с текстом.
-    Это удобно, чтобы мобильное приложение могло проверить соединение.
-    """
+    """Простой эндпоинт для проверки, что сервер работает."""
     return {
-        "project": "ZerroGate",
+        "project": "ZeroGate",
         "status": "ok",
+        "version": "0.1.0",
     }
