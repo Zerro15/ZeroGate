@@ -1,23 +1,30 @@
-"""Application configuration using Pydantic settings."""
-from pydantic import BaseSettings, Field
+# backend/app/core/config.py
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Global settings for backend."""
+    # версия сервиса для /api/status и Swagger
+    VERSION: str = "0.1.0"
 
-    app_name: str = Field("ZerroGate Backend", description="Public app name")
-    debug: bool = Field(False, description="Enable debug mode")
-    version: str = Field("0.1.0", description="Version of the backend")
-    secret_key: str = Field("change-me", description="Secret key for JWT")
-    access_token_expire_minutes: int = Field(60, description="Access token lifetime")
-    database_url: str = Field(
-        "sqlite+aiosqlite:///./zerrogate.db", description="SQLAlchemy database URL"
+    # базовые настройки JWT
+    JWT_SECRET_KEY: str = Field("changeme-secret", env="JWT_SECRET_KEY")
+    JWT_ALGORITHM: str = Field("HS256", env="JWT_ALGORITHM")
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(60 * 24, env="JWT_ACCESS_TOKEN_EXPIRE_MINUTES")
+
+    # база (по умолчанию SQLite-файл)
+    DATABASE_URL: str = Field(
+        "sqlite+aiosqlite:///./zerrogate.db",
+        env="DATABASE_URL",
     )
-    admin_email: str = Field("admin@zerrogate.local", description="Default admin email")
-    admin_password: str = Field("admin", description="Default admin password")
 
-    class Config:
-        env_file = ".env"
+    # конфиг для pydantic-settings v2
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
 
 settings = Settings()

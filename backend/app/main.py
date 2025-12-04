@@ -1,16 +1,28 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 
-from .api.routes import status as status_routes
+from backend.app.api.routes import status as status_routes
+from backend.app.api.routes import auth as auth_routes
+from backend.app.api.routes import devices as devices_routes
+from backend.app.api.routes import logs as logs_routes
+from backend.app.api.routes import profiles as profiles_routes
+from backend.app.core.config import settings
 
 
-app = FastAPI(title="ZeroGate Backend")
+app = FastAPI(
+    title="ZeroGate Backend",
+    version=settings.VERSION,
+)
 
-# Подключаем роутер со статусом (/api/status).
+# Подключаем все API-роутеры
 app.include_router(status_routes.router)
+app.include_router(auth_routes.router)
+app.include_router(devices_routes.router)
+app.include_router(logs_routes.router)
+app.include_router(profiles_routes.router)
 
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/", response_class=HTMLResponse, tags=["default"])
 def index() -> str:
     """Минималистичная HTML-дашборда ZeroGate поверх FastAPI."""
     return """
