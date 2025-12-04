@@ -8,6 +8,7 @@ class DeviceBase(BaseModel):
     """Базовые поля устройства."""
 
     name: str
+    device_type: str = "unknown"
     status: str = "offline"
 
 
@@ -21,6 +22,7 @@ class DeviceUpdate(BaseModel):
     """Поля, которые можно менять у существующего устройства."""
 
     name: str | None = None
+    device_type: str | None = None
     status: str | None = None
 
 

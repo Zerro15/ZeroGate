@@ -15,26 +15,31 @@ from backend.app.services.user_service import UserService
 
 
 @asynccontextmanager
-def lifespan(app: FastAPI):
-    """Создаём таблицы и сидим админов при старте."""
+async def lifespan(app: FastAPI):
+    """Создаём таблицы и сидим админа при старте."""
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     async with async_session_maker() as session:
         service = UserService(session)
-        existing = await service.get_by_email(settings.ADMIN_EMAIL)
-        if not existing:
-            await service.create(
-                user_in=UserCreate(email=settings.ADMIN_EMAIL, password=settings.ADMIN_PASSWORD),
-                is_admin=True,
-                is_active=True,
-            )
+        if settings.SEED_ADMIN:
+            existing = await service.get_by_email(settings.FIRST_ADMIN_EMAIL)
+            if not existing:
+                await service.create(
+                    user_in=UserCreate(
+                        email=settings.FIRST_ADMIN_EMAIL,
+                        password=settings.FIRST_ADMIN_PASSWORD,
+                    ),
+                    is_admin=True,
+                    is_active=True,
+                )
     yield
     await engine.dispose()
 
 
 app = FastAPI(
-    title=settings.PROJECT_NAME,
+    title="ZeroGate Backend",
+    version=settings.VERSION,
     openapi_url=f"{settings.API_V1_PREFIX}/openapi.json",
     lifespan=lifespan,
 )

@@ -20,12 +20,20 @@ class Settings(BaseSettings):
 
     JWT_SECRET_KEY: str = Field("changeme-secret", alias="JWT_SECRET_KEY")
     JWT_ALGORITHM: str = Field("HS256", alias="JWT_ALGORITHM")
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(60 * 24, alias="JWT_ACCESS_TOKEN_EXPIRE_MINUTES")
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(
+        60 * 24, alias="JWT_ACCESS_TOKEN_EXPIRE_MINUTES"
+    )
 
-    DATABASE_URL: str = Field("sqlite+aiosqlite:///./zerrogate.db", alias="DATABASE_URL")
+    DATABASE_URL: str = Field(
+        "sqlite+aiosqlite:///./zerrogate.db",
+        alias="DATABASE_URL",
+    )
 
-    ADMIN_EMAIL: str = Field("admin@zerogate.local", alias="ADMIN_EMAIL")
-    ADMIN_PASSWORD: str = Field("admin", alias="ADMIN_PASSWORD")
+    FIRST_ADMIN_EMAIL: str = Field(
+        "admin@zerogate.local", alias="FIRST_ADMIN_EMAIL"
+    )
+    FIRST_ADMIN_PASSWORD: str = Field("admin", alias="FIRST_ADMIN_PASSWORD")
+    SEED_ADMIN: bool = Field(True, alias="SEED_ADMIN")
 
     CREATE_DEMO_USER: bool = Field(False, alias="CREATE_DEMO_USER")
     DEMO_EMAIL: str = Field("demo@zerogate.local", alias="DEMO_EMAIL")

@@ -1,5 +1,6 @@
 """Логика работы с профилями подключения."""
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.models.profile import ConnectionProfile
 from backend.app.schemas.profile import ProfileCreate, ProfileUpdate
@@ -8,43 +9,49 @@ from backend.app.schemas.profile import ProfileCreate, ProfileUpdate
 class ProfileService:
     """CRUD операции по профилям."""
 
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
-    def list_for_user(self, user_id: int) -> list[ConnectionProfile]:
+    async def list_for_user(self, user_id: int) -> list[ConnectionProfile]:
         """Список профилей конкретного пользователя."""
 
-        return self.db.query(ConnectionProfile).filter(ConnectionProfile.user_id == user_id).all()
+        result = await self.db.execute(
+            select(ConnectionProfile).where(ConnectionProfile.user_id == user_id)
+        )
+        return list(result.scalars().all())
 
-    def get(self, profile_id: int, user_id: int) -> ConnectionProfile | None:
+    async def get(self, profile_id: int, user_id: int) -> ConnectionProfile | None:
         """Получить профиль по id с проверкой владельца."""
 
-        return (
-            self.db.query(ConnectionProfile)
-            .filter(ConnectionProfile.id == profile_id, ConnectionProfile.user_id == user_id)
-            .first()
+        result = await self.db.execute(
+            select(ConnectionProfile).where(
+                ConnectionProfile.id == profile_id, ConnectionProfile.user_id == user_id
+            )
         )
+        return result.scalar_one_or_none()
 
-    def create(self, user_id: int, profile_in: ProfileCreate) -> ConnectionProfile:
+    async def create(self, user_id: int, profile_in: ProfileCreate) -> ConnectionProfile:
         """Создать профиль."""
 
         db_profile = ConnectionProfile(user_id=user_id, **profile_in.model_dump())
         self.db.add(db_profile)
-        self.db.commit()
-        self.db.refresh(db_profile)
+        await self.db.commit()
+        await self.db.refresh(db_profile)
         return db_profile
 
-    def update(self, profile: ConnectionProfile, profile_in: ProfileUpdate) -> ConnectionProfile:
+    async def update(
+        self, profile: ConnectionProfile, profile_in: ProfileUpdate
+    ) -> ConnectionProfile:
         """Обновить поля профиля."""
 
         for field, value in profile_in.model_dump(exclude_none=True).items():
             setattr(profile, field, value)
-        self.db.commit()
-        self.db.refresh(profile)
+        await self.db.commit()
+        await self.db.refresh(profile)
         return profile
 
-    def delete(self, profile: ConnectionProfile) -> None:
+    async def delete(self, profile: ConnectionProfile) -> None:
         """Удалить профиль."""
 
-        self.db.delete(profile)
-        self.db.commit()
+        await self.db.delete(profile)
+        await self.db.commit()

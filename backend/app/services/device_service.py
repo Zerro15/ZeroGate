@@ -1,5 +1,8 @@
 """Логика работы с устройствами."""
-from sqlalchemy.orm import Session
+from datetime import datetime
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.models.device import Device
 from backend.app.schemas.device import DeviceCreate, DeviceUpdate
@@ -8,45 +11,53 @@ from backend.app.schemas.device import DeviceCreate, DeviceUpdate
 class DeviceService:
     """CRUD для устройств."""
 
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
-    def list_for_user(self, user_id: int) -> list[Device]:
+    async def list_for_user(self, user_id: int) -> list[Device]:
         """Возвращает устройства пользователя."""
 
-        return self.db.query(Device).filter(Device.owner_id == user_id).all()
+        result = await self.db.execute(select(Device).where(Device.owner_id == user_id))
+        return list(result.scalars().all())
 
-    def get(self, device_id: int, user_id: int) -> Device | None:
+    async def get(self, device_id: int, user_id: int) -> Device | None:
         """Возвращает устройство по id, убеждаясь что владелец совпадает."""
 
-        return (
-            self.db.query(Device)
-            .filter(Device.id == device_id, Device.owner_id == user_id)
-            .first()
+        result = await self.db.execute(
+            select(Device).where(Device.id == device_id, Device.owner_id == user_id)
         )
+        return result.scalar_one_or_none()
 
-    def create(self, user_id: int, device_in: DeviceCreate) -> Device:
+    async def create(self, user_id: int, device_in: DeviceCreate) -> Device:
         """Создаёт новое устройство."""
 
-        db_device = Device(owner_id=user_id, name=device_in.name, status=device_in.status)
+        db_device = Device(
+            owner_id=user_id,
+            name=device_in.name,
+            status=device_in.status,
+            device_type=device_in.device_type,
+            created_at=datetime.utcnow(),
+        )
         self.db.add(db_device)
-        self.db.commit()
-        self.db.refresh(db_device)
+        await self.db.commit()
+        await self.db.refresh(db_device)
         return db_device
 
-    def update(self, device: Device, device_in: DeviceUpdate) -> Device:
+    async def update(self, device: Device, device_in: DeviceUpdate) -> Device:
         """Обновляет поля устройства."""
 
         if device_in.name is not None:
             device.name = device_in.name
         if device_in.status is not None:
             device.status = device_in.status
-        self.db.commit()
-        self.db.refresh(device)
+        if device_in.device_type is not None:
+            device.device_type = device_in.device_type
+        await self.db.commit()
+        await self.db.refresh(device)
         return device
 
-    def delete(self, device: Device) -> None:
+    async def delete(self, device: Device) -> None:
         """Удаляет устройство."""
 
-        self.db.delete(device)
-        self.db.commit()
+        await self.db.delete(device)
+        await self.db.commit()
