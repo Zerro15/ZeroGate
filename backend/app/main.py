@@ -1,43 +1,18 @@
-from datetime import datetime
-
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 
-# Создаём объект приложения FastAPI.
-# Название проекта будет видно и в /docs, и в нашей HTML-страничке.
+from .api.routes import status as status_routes
+
+
 app = FastAPI(title="ZeroGate Backend")
 
-
-@app.get("/api/status")
-def get_status() -> dict:
-    """Простой эндпоинт для проверки, что сервер работает.
-
-    Здесь мы возвращаем базовую информацию о состоянии сервера:
-    - название проекта;
-    - статус (ok / error);
-    - текущее серверное время в формате ISO.
-
-    Этим эндпоинтом будет пользоваться и мобильное приложение, и браузерный UI.
-    """
-    return {
-        "project": "ZeroGate",
-        "status": "ok",
-        "time": datetime.utcnow().isoformat() + "Z",
-    }
+# Подключаем роутер со статусом (/api/status).
+app.include_router(status_routes.router)
 
 
 @app.get("/", response_class=HTMLResponse)
 def index() -> str:
-    """Простая HTML-дашборда ZeroGate.
-
-    Здесь НЕТ никакого сложного фронтенда.
-    Это обычная HTML-страница с чуть-чуть CSS и JavaScript.
-
-    JS-код раз в несколько секунд делает запрос к /api/status
-    и обновляет данные на странице.
-    Такой подход удобен для учебных проектов: сразу видно,
-    как backend и frontend общаются через HTTP/JSON.
-    """
+    """Минималистичная HTML-дашборда ZeroGate поверх FastAPI."""
     return """
     <!DOCTYPE html>
     <html lang="ru">
@@ -45,8 +20,6 @@ def index() -> str:
         <meta charset="UTF-8" />
         <title>ZeroGate Dashboard</title>
         <style>
-            /* Небольшой минималистичный дизайн, чтобы выглядело как приложение */
-
             :root {
                 color-scheme: dark;
                 --bg: #050816;
@@ -299,7 +272,6 @@ def index() -> str:
         </main>
 
         <script>
-            // Эта функция делает запрос к /api/status и обновляет данные на странице.
             async function fetchStatus() {
                 const projectEl = document.getElementById("project-name");
                 const timeEl = document.getElementById("server-time");
@@ -338,7 +310,6 @@ def index() -> str:
                     lastUpdateEl.textContent = now.toLocaleTimeString();
 
                 } catch (error) {
-                    // Если сервер недоступен или случилась ошибка, показываем предупреждение.
                     statusTextEl.textContent = "Offline";
                     pillEl.classList.add("off");
                     statusLabelEl.textContent = "Статус: недоступен";
@@ -347,14 +318,11 @@ def index() -> str:
                 }
             }
 
-            // Показываем информацию о клиенте (браузере).
             function fillClientInfo() {
                 const clientInfoEl = document.getElementById("client-info");
                 clientInfoEl.textContent = navigator.userAgent;
             }
 
-            // При загрузке страницы сразу один раз обновляем статус,
-            // а потом опрашиваем сервер каждые 5 секунд.
             window.addEventListener("DOMContentLoaded", () => {
                 fillClientInfo();
                 fetchStatus();
