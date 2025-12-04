@@ -1,0 +1,57 @@
+{
+  "name": "zerogate-desktop",
+  "version": "0.1.0",
+  "description": "ZeroGate desktop client built with Electron, React, and TypeScript.",
+  "main": "dist-electron/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron:start": "cross-env VITE_DEV_SERVER_URL=http://localhost:5173 tsx electron/main.ts",
+    "electron:dev": "concurrently \"npm run dev\" \"npm run electron:start\"",
+    "electron:build": "npm run build && tsc -p electron/tsconfig.json && electron-builder"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.51.23",
+    "axios": "^1.7.7",
+    "classnames": "^2.5.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.0"
+  },
+  "devDependencies": {
+    "@electron/notarize": "^2.4.1",
+    "@types/node": "^22.9.4",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@typescript-eslint/eslint-plugin": "^8.13.0",
+    "@typescript-eslint/parser": "^8.13.0",
+    "@vitejs/plugin-react": "^4.3.2",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.0",
+    "cross-env": "^7.0.3",
+    "electron": "^31.7.5",
+    "electron-builder": "^24.13.3",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.14",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  },
+  "build": {
+    "appId": "com.zerrogate.desktop",
+    "productName": "ZeroGate",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**",
+      "dist-electron/**"
+    ],
+    "win": {
+      "target": "nsis",
+      "artifactName": "ZeroGate-Setup-${version}.exe"
+    }
+  }
+}
